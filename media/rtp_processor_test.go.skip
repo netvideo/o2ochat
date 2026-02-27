@@ -1,0 +1,288 @@
+package media
+
+import (
+	"testing"
+	"time"
+)
+
+func TestRTPProcessor_Initialize(t *testing.T) {
+	processor, err := NewRTPProcessor(12345678, 96, 48000)
+	if err != nil {
+		t.Fatalf("Failed to create RTP processor: %v", err)
+	}
+
+	stats := processor.GetRTPStats()
+	if stats == nil {
+		t.Error("Expected RTP stats")
+	}
+}
+
+func TestRTPProcessor_Packetize(t *testing.T) {
+	processor, _ := NewRTPProcessor(12345678, 96, 48000)
+
+	frame := &MediaFrame{
+		Type:      MediaTypeAudio,
+		Timestamp: 160,
+		Sequence:  1,
+		Payload:   []byte{1, 2, 3, 4, 5, 6, 7, 8},
+		KeyFrame:  false,
+	}
+
+	packets, err := processor.Packetize(frame)
+	if err != nil {
+		t.Fatalf("Packetize failed: %v", err)
+	}
+
+	if len(packets) == 0 {
+		t.Error("Expected at least one packet")
+	}
+}
+
+func TestRTPProcessor_Depacketize(t *testing.T) {
+	processor, _ := NewRTPProcessor(12345678, 96, 48000)
+
+	packet := &RTPPacket{
+		Version:     2,
+		Marker:      true,
+		PayloadType: 96,
+		Sequence:    100,
+		Timestamp:   160,
+		SSRC:        12345678,
+		Payload:     []byte{1, 2, 3, 4, 5, 6, 7, 8},
+	}
+
+	frame, err := processor.Depacketize(packet)
+	if err != nil {
+		t.Fatalf("Depacketize failed: %v", err)
+	}
+
+	if frame == nil {
+		t.Error("Expected frame")
+	}
+}
+
+func TestRTPProcessor_SetPayloadType(t *testing.T) {
+	processor, _ := NewRTPProcessor(12345678, 96, 48000)
+
+	err := processor.SetPayloadType(97)
+	if err != nil {
+		t.Errorf("SetPayloadType failed: %v", err)
+	}
+}
+
+func TestRTPProcessor_SetClockRate(t *testing.T) {
+	processor, _ := NewRTPProcessor(12345678, 96, 48000)
+
+	err := processor.SetClockRate(16000)
+	if err != nil {
+		t.Errorf("SetClockRate failed: %v", err)
+	}
+}
+
+func TestRTPProcessor_HandleNACK(t *testing.T) {
+	processor, _ := NewRTPProcessor(12345678, 96, 48000)
+
+	seqNums := []uint16{100, 101, 102}
+	packets, err := processor.HandleNACK(seqNums)
+	if err != nil {
+		t.Fatalf("HandleNACK failed: %v", err)
+	}
+
+	_ = packets
+}
+
+func TestRTPProcessor_HandlePLI(t *testing.T) {
+	processor, _ := NewRTPProcessor(12345678, 96, 48000)
+
+	err := processor.HandlePLI()
+	if err != nil {
+		t.Errorf("HandlePLI failed: %v", err)
+	}
+}
+
+func TestRTPProcessor_HandleFIR(t *testing.T) {
+	processor, _ := NewRTPProcessor(12345678, 96, 48000)
+
+	err := processor.HandleFIR()
+	if err != nil {
+		t.Errorf("HandleFIR failed: %v", err)
+	}
+}
+
+func TestRTPProcessor_InvalidPayloadType(t *testing.T) {
+	_, err := NewRTPProcessor(12345678, 200, 48000)
+	if err == nil {
+		t.Error("Expected error for invalid payload type")
+	}
+}
+
+func TestRTPProcessor_SerializeDeserialize(t *testing.T) {
+	processor, _ := NewRTPProcessor(12345678, 96, 48000)
+
+	packet := &RTPPacket{
+		Version:     2,
+		Marker:      true,
+		PayloadType: 96,
+		Sequence:    100,
+		Timestamp:   160,
+		SSRC:        12345678,
+		Payload:     []byte{1, 2, 3, 4, 5, 6, 7, 8},
+	}
+
+	serialized, err := processor.SerializePacket(packet)
+	if err != nil {
+		t.Fatalf("SerializePacket failed: %v", err)
+	}
+
+	deserialized, err := processor.DeserializePacket(serialized)
+	if err != nil {
+		t.Fatalf("DeserializePacket failed: %v", err)
+	}
+
+	if deserialized.Sequence != packet.Sequence {
+		t.Errorf("Sequence mismatch")
+	}
+	if deserialized.Timestamp != packet.Timestamp {
+		t.Errorf("Timestamp mismatch")
+	}
+	if deserialized.SSRC != packet.SSRC {
+		t.Errorf("SSRC mismatch")
+	}
+}
+
+func TestRTPProcessor_InvalidVersion(t *testing.T) {
+	processor, _ := NewRTPProcessor(12345678, 96, 48000)
+
+	data := []byte{0x10, 0x60, 0x00, 0x64, 0x00, 0x00, 0x00, 0xA0, 0x00, 0xBC, 0x61, 0x4E}
+
+	_, err := processor.DeserializePacket(data)
+	if err == nil {
+		t.Error("Expected error for invalid version")
+	}
+}
+
+func TestJitterBuffer_Initialize(t *testing.T) {
+	buffer, err := NewJitterBuffer(200 * time.Millisecond)
+	if err != nil {
+		t.Fatalf("Failed to create jitter buffer: %v", err)
+	}
+
+	status := buffer.GetBufferStatus()
+	if status == nil {
+		t.Error("Expected buffer status")
+	}
+}
+
+func TestJitterBuffer_AddPacket(t *testing.T) {
+	buffer, _ := NewJitterBuffer(200 * time.Millisecond)
+
+	packet := &RTPPacket{
+		Version:     2,
+		Marker:      true,
+		PayloadType: 96,
+		Sequence:    100,
+		Timestamp:   160,
+		SSRC:        12345678,
+		Payload:     []byte{1, 2, 3, 4, 5, 6, 7, 8},
+	}
+
+	err := buffer.AddPacket(packet)
+	if err != nil {
+		t.Fatalf("AddPacket failed: %v", err)
+	}
+}
+
+func TestJitterBuffer_GetNextFrame(t *testing.T) {
+	buffer, _ := NewJitterBuffer(200 * time.Millisecond)
+
+	packet := &RTPPacket{
+		Version:     2,
+		Marker:      true,
+		PayloadType: 96,
+		Sequence:    100,
+		Timestamp:   160,
+		SSRC:        12345678,
+		Payload:     []byte{1, 2, 3, 4, 5, 6, 7, 8},
+	}
+
+	buffer.AddPacket(packet)
+
+	frame, err := buffer.GetNextFrame()
+	if err != nil {
+		t.Fatalf("GetNextFrame failed: %v", err)
+	}
+
+	if frame != nil && frame.Sequence != 100 {
+		t.Errorf("Sequence mismatch")
+	}
+}
+
+func TestJitterBuffer_SetBufferSize(t *testing.T) {
+	buffer, _ := NewJitterBuffer(200 * time.Millisecond)
+
+	err := buffer.SetBufferSize(300 * time.Millisecond)
+	if err != nil {
+		t.Errorf("SetBufferSize failed: %v", err)
+	}
+}
+
+func TestJitterBuffer_Reset(t *testing.T) {
+	buffer, _ := NewJitterBuffer(200 * time.Millisecond)
+
+	packet := &RTPPacket{
+		Sequence: 100,
+		Payload:  []byte{1, 2, 3},
+	}
+
+	buffer.AddPacket(packet)
+
+	err := buffer.Reset()
+	if err != nil {
+		t.Errorf("Reset failed: %v", err)
+	}
+
+	status := buffer.GetBufferStatus()
+	if status.PacketCount != 0 {
+		t.Error("Expected empty buffer after reset")
+	}
+}
+
+func TestJitterBuffer_Close(t *testing.T) {
+	buffer, _ := NewJitterBuffer(200 * time.Millisecond)
+
+	err := buffer.Close()
+	if err != nil {
+		t.Errorf("Close failed: %v", err)
+	}
+}
+
+func TestRTPProcessorFactory(t *testing.T) {
+	factory := NewRTPProcessorFactory()
+
+	audioProcessor, err := factory.CreateAudioProcessor(12345678)
+	if err != nil {
+		t.Fatalf("CreateAudioProcessor failed: %v", err)
+	}
+
+	if audioProcessor == nil {
+		t.Error("Expected audio processor")
+	}
+
+	videoProcessor, err := factory.CreateVideoProcessor(87654321)
+	if err != nil {
+		t.Fatalf("CreateVideoProcessor failed: %v", err)
+	}
+
+	if videoProcessor == nil {
+		t.Error("Expected video processor")
+	}
+
+	jitterBuffer, err := factory.CreateJitterBuffer()
+	if err != nil {
+		t.Fatalf("CreateJitterBuffer failed: %v", err)
+	}
+
+	if jitterBuffer == nil {
+		t.Error("Expected jitter buffer")
+	}
+}

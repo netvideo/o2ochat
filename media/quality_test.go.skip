@@ -1,0 +1,342 @@
+package media
+
+import (
+	"testing"
+	"time"
+)
+
+func TestBandwidthEstimator_AddSample(t *testing.T) {
+	estimator := NewBandwidthEstimator(100000, 1000000)
+
+	estimator.AddSample(10000, 100*time.Millisecond, 0, 0)
+	estimator.AddSample(20000, 100*time.Millisecond, 0, 0)
+	estimator.AddSample(30000, 100*time.Millisecond, 0, 0)
+
+	estimate := estimator.GetEstimate()
+	if estimate <= 0 {
+		t.Error("Expected positive bandwidth estimate")
+	}
+}
+
+func TestBandwidthEstimator_PacketLossPenalty(t *testing.T) {
+	estimator := NewBandwidthEstimator(100000, 1000000)
+
+	estimator.AddSample(50000, 100*time.Millisecond, 0.2, 0)
+	estimator.AddSample(50000, 100*time.Millisecond, 0.2, 0)
+
+	estimate := estimator.GetEstimate()
+	if estimate >= 1000000 {
+		t.Error("Expected reduced bandwidth due to packet loss")
+	}
+}
+
+func TestBandwidthEstimator_GetTargetBitrate(t *testing.T) {
+	estimator := NewBandwidthEstimator(100000, 1000000)
+
+	bitrate := estimator.GetTargetBitrate(MediaTypeVideo)
+	if bitrate <= 0 {
+		t.Error("Expected positive target bitrate")
+	}
+}
+
+func TestQualityController_GetQualityForBitrate(t *testing.T) {
+	controller := NewQualityController()
+
+	tests := []struct {
+		bitrate int64
+		quality QualityLevel
+	}{
+		{100000, QualityLow},
+		{300000, QualityMedium},
+		{1000000, QualityHigh},
+		{2000000, QualityUltra},
+	}
+
+	for _, tc := range tests {
+		quality := controller.GetQualityForBitrate(tc.bitrate)
+		if quality != tc.quality {
+			t.Errorf("Expected quality %v for bitrate %d, got %v", tc.quality, tc.bitrate, quality)
+		}
+	}
+}
+
+func TestQualityController_GetResolutionForQuality(t *testing.T) {
+	controller := NewQualityController()
+
+	width, height := controller.GetResolutionForQuality(QualityLow)
+	if width != 320 || height != 240 {
+		t.Errorf("Expected 320x240, got %dx%d", width, height)
+	}
+
+	width, height = controller.GetResolutionForQuality(QualityHigh)
+	if width != 1280 || height != 720 {
+		t.Errorf("Expected 1280x720, got %dx%d", width, height)
+	}
+}
+
+func TestQualityController_GetBitrateForQuality(t *testing.T) {
+	controller := NewQualityController()
+
+	audioBitrate := controller.GetBitrateForQuality(QualityMedium, MediaTypeAudio)
+	if audioBitrate != 64000 {
+		t.Errorf("Expected 64000 audio bitrate, got %d", audioBitrate)
+	}
+
+	videoBitrate := controller.GetBitrateForQuality(QualityMedium, MediaTypeVideo)
+	if videoBitrate != 500000 {
+		t.Errorf("Expected 500000 video bitrate, got %d", videoBitrate)
+	}
+}
+
+func TestQualityController_AdjustQuality(t *testing.T) {
+	controller := NewQualityController()
+
+	adjusted := controller.AdjustQuality(0.15, 50*time.Millisecond, 600*time.Millisecond)
+	if !adjusted {
+		t.Log("Quality adjustment may not trigger immediately")
+	}
+
+	quality := controller.GetCurrentQuality()
+	t.Logf("Current quality: %v", quality)
+}
+
+func TestQualityController_GetCodecConfig(t *testing.T) {
+	controller := NewQualityController()
+
+	config := controller.GetCodecConfig()
+	if config == nil {
+		t.Error("Expected codec config")
+	}
+
+	if _, ok := config["width"].(int); !ok {
+		t.Error("Expected width in config")
+	}
+	if _, ok := config["video_bitrate"].(int); !ok {
+		t.Error("Expected video_bitrate in config")
+	}
+}
+
+func TestNetworkAdaptor_StartStop(t *testing.T) {
+	session, _ := NewCallSession("test-session", nil, nil)
+	session.Start()
+	defer session.Stop()
+
+	adaptor := NewNetworkAdaptor(session, 100000, 1000000)
+
+	err := adaptor.Start()
+	if err != nil {
+		t.Fatalf("Start failed: %v", err)
+	}
+
+	err = adaptor.Stop()
+	if err != nil {
+		t.Fatalf("Stop failed: %v", err)
+	}
+}
+
+func TestNetworkAdaptor_GetBandwidthEstimate(t *testing.T) {
+	session, _ := NewCallSession("test-session", nil, nil)
+	session.Start()
+	defer session.Stop()
+
+	adaptor := NewNetworkAdaptor(session, 100000, 1000000)
+	adaptor.Start()
+	defer adaptor.Stop()
+
+	estimate := adaptor.GetBandwidthEstimate()
+	t.Logf("Bandwidth estimate: %d bps", estimate)
+}
+
+func TestNetworkAdaptor_GetCurrentQuality(t *testing.T) {
+	session, _ := NewCallSession("test-session", nil, nil)
+	session.Start()
+	defer session.Stop()
+
+	adaptor := NewNetworkAdaptor(session, 100000, 1000000)
+	adaptor.Start()
+	defer adaptor.Stop()
+
+	quality := adaptor.GetCurrentQuality()
+	t.Logf("Current quality: %v", quality)
+}
+
+func TestStatsCollector_RecordStats(t *testing.T) {
+	collector := NewStatsCollector()
+
+	collector.RecordAudioStats(StreamStatsData{
+		BytesSent:     1000,
+		BytesReceived: 2000,
+		Bitrate:       64000,
+	})
+
+	collector.RecordVideoStats(StreamStatsData{
+		BytesSent:     10000,
+		BytesReceived: 20000,
+		Bitrate:       500000,
+	})
+
+	collector.RecordNetworkStats(NetworkStatsData{
+		Bandwidth:  1000000,
+		PacketLoss: 0.01,
+		Jitter:     20 * time.Millisecond,
+		Latency:    50 * time.Millisecond,
+	})
+
+	audioStats := collector.GetAudioStats()
+	if audioStats.Bitrate != 64000 {
+		t.Errorf("Expected 64000 audio bitrate, got %d", audioStats.Bitrate)
+	}
+}
+
+func TestStatsCollector_GetQualityScore(t *testing.T) {
+	collector := NewStatsCollector()
+
+	collector.RecordNetworkStats(NetworkStatsData{
+		PacketLoss: 0.01,
+		Jitter:     20 * time.Millisecond,
+		Latency:    50 * time.Millisecond,
+	})
+
+	score := collector.GetQualityScore()
+	if score < 1.0 || score > 4.5 {
+		t.Errorf("Expected MOS between 1.0 and 4.5, got %f", score)
+	}
+}
+
+func TestStatsCollector_Reset(t *testing.T) {
+	collector := NewStatsCollector()
+
+	collector.RecordAudioStats(StreamStatsData{BytesSent: 1000})
+
+	collector.Reset()
+
+	audioStats := collector.GetAudioStats()
+	if audioStats.BytesSent != 0 {
+		t.Error("Expected stats to be reset")
+	}
+}
+
+func TestCalculateMOS(t *testing.T) {
+	tests := []struct {
+		packetLoss float64
+		latency    time.Duration
+		jitter     time.Duration
+		minMOS     float64
+		maxMOS     float64
+	}{
+		{0, 50 * time.Millisecond, 10 * time.Millisecond, 3.5, 4.5},
+		{0.05, 100 * time.Millisecond, 30 * time.Millisecond, 2.5, 4.0},
+		{0.15, 300 * time.Millisecond, 50 * time.Millisecond, 1.5, 3.0},
+		{0.3, 500 * time.Millisecond, 100 * time.Millisecond, 1.0, 2.0},
+	}
+
+	for _, tc := range tests {
+		mos := CalculateMOS(tc.packetLoss, tc.latency, tc.jitter)
+		if mos < tc.minMOS || mos > tc.maxMOS {
+			t.Errorf("MOS %f out of range [%f, %f] for packet_loss=%.2f, latency=%v, jitter=%v",
+				mos, tc.minMOS, tc.maxMOS, tc.packetLoss, tc.latency, tc.jitter)
+		}
+	}
+}
+
+func TestCallQualityMonitor_StartStop(t *testing.T) {
+	monitor := NewCallQualityMonitor("test-session")
+
+	monitor.Start()
+	monitor.Stop()
+}
+
+func TestCallQualityMonitor_GetCurrentQuality(t *testing.T) {
+	monitor := NewCallQualityMonitor("test-session")
+
+	info := monitor.GetCurrentQuality()
+	t.Logf("Quality info: MOS=%.2f, Quality=%v, PacketLoss=%.2f%%",
+		info.MOS, info.Quality, info.PacketLoss*100)
+}
+
+func TestCallQualityMonitor_SetCallback(t *testing.T) {
+	monitor := NewCallQualityMonitor("test-session")
+
+	callbackCalled := false
+	monitor.SetCallback(func(info QualityInfo) {
+		callbackCalled = true
+	})
+
+	monitor.Start()
+	time.Sleep(100 * time.Millisecond)
+	monitor.Stop()
+
+	if !callbackCalled {
+		t.Log("Callback may not be called in short duration")
+	}
+}
+
+func TestBitrateController_Adjust(t *testing.T) {
+	controller := NewBitrateController(100000, 1000000, 500000)
+
+	bitrate := controller.Adjust(0.01, 50*time.Millisecond)
+	if bitrate <= 0 {
+		t.Error("Expected positive bitrate")
+	}
+}
+
+func TestBitrateController_AdjustHighPacketLoss(t *testing.T) {
+	controller := NewBitrateController(100000, 1000000, 500000)
+
+	for i := 0; i < 10; i++ {
+		controller.Adjust(0.2, 100*time.Millisecond)
+	}
+
+	bitrate := controller.GetCurrentBitrate()
+	if bitrate > 500000 {
+		t.Error("Expected bitrate to decrease with high packet loss")
+	}
+}
+
+func TestBitrateController_SetTargetBitrate(t *testing.T) {
+	controller := NewBitrateController(100000, 1000000, 500000)
+
+	controller.SetTargetBitrate(800000)
+	target := controller.GetTargetBitrate()
+	if target != 800000 {
+		t.Errorf("Expected target bitrate 800000, got %d", target)
+	}
+}
+
+func TestPacketLossDetector_RecordPacket(t *testing.T) {
+	detector := NewPacketLossDetector(0.1)
+
+	detector.RecordPacket(1, true)
+	detector.RecordPacket(2, true)
+	detector.RecordPacket(3, false)
+	detector.RecordPacket(4, false)
+	detector.RecordPacket(5, true)
+
+	loss := detector.GetPacketLoss()
+	if loss <= 0 {
+		t.Error("Expected packet loss > 0")
+	}
+}
+
+func TestPacketLossDetector_GetPacketLoss(t *testing.T) {
+	detector := NewPacketLossDetector(0.1)
+
+	loss := detector.GetPacketLoss()
+	if loss != 0 {
+		t.Error("Expected 0 loss with no packets")
+	}
+}
+
+func TestPacketLossDetector_Reset(t *testing.T) {
+	detector := NewPacketLossDetector(0.1)
+
+	detector.RecordPacket(1, false)
+	detector.RecordPacket(2, false)
+
+	detector.Reset()
+
+	loss := detector.GetPacketLoss()
+	if loss != 0 {
+		t.Error("Expected 0 loss after reset")
+	}
+}

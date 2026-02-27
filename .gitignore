@@ -1,0 +1,64 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+o2ochat
+
+# Test binary
+*.test
+
+# Output of the go coverage tool
+*.out
+coverage.out
+
+# Dependency directories
+vendor/
+
+# Go workspace file
+go.work
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# Data and logs
+data/
+logs/
+*.log
+
+# Config (keep sample)
+config.json
+
+# Build output
+/build/
+dist/
+
+# Backups
+*.zip
+*.bak
+
+# Documentation (internal)
+o2ochat.md
+AGENTS.md
+code.md
+PROJECT_*.md
+PROGRESS_*.md
+INTEGRATION_*.md
+
+# Temporary files
+tmp/
+temp/
+*.tmp

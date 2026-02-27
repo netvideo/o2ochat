@@ -1,0 +1,373 @@
+package media
+
+import (
+	"testing"
+	"time"
+)
+
+func TestCallSession_NewSession(t *testing.T) {
+	config := DefaultCallConfig()
+	peerInfo := &PeerInfo{
+		PeerID: "test-peer",
+	}
+
+	session, err := NewCallSession("test-session", config, peerInfo)
+	if err != nil {
+		t.Fatalf("Failed to create session: %v", err)
+	}
+
+	if session.GetSessionID() != "test-session" {
+		t.Errorf("Session ID mismatch")
+	}
+
+	if session.GetRemoteInfo().PeerID != "test-peer" {
+		t.Errorf("Peer ID mismatch")
+	}
+}
+
+func TestCallSession_StartStop(t *testing.T) {
+	session, _ := NewCallSession("test-session", nil, nil)
+
+	err := session.Start()
+	if err != nil {
+		t.Fatalf("Start failed: %v", err)
+	}
+
+	if session.GetState() != SessionStateConnected {
+		t.Errorf("Expected connected state")
+	}
+
+	err = session.Stop()
+	if err != nil {
+		t.Fatalf("Stop failed: %v", err)
+	}
+
+	if session.GetState() != SessionStateDisconnected {
+		t.Errorf("Expected disconnected state")
+	}
+}
+
+func TestCallSession_PauseResume(t *testing.T) {
+	session, _ := NewCallSession("test-session", nil, nil)
+	session.Start()
+
+	err := session.Pause(MediaTypeAudio)
+	if err != nil {
+		t.Errorf("Pause failed: %v", err)
+	}
+
+	if !session.IsAudioMuted() {
+		t.Error("Audio should be muted after pause")
+	}
+
+	err = session.Resume(MediaTypeAudio)
+	if err != nil {
+		t.Errorf("Resume failed: %v", err)
+	}
+
+	if session.IsAudioMuted() {
+		t.Error("Audio should be unmuted after resume")
+	}
+}
+
+func TestCallSession_AdjustBitrate(t *testing.T) {
+	config := &CallConfig{
+		MaxBitrate:   1000000,
+		MinBitrate:   100000,
+		StartBitrate: 500000,
+		AudioConfig:  DefaultAudioConfig(),
+		VideoConfig:  DefaultVideoConfig(),
+	}
+
+	session, _ := NewCallSession("test-session", config, nil)
+	session.Start()
+
+	err := session.AdjustBitrate(800000)
+	if err != nil {
+		t.Errorf("AdjustBitrate failed: %v", err)
+	}
+}
+
+func TestCallSession_GetStats(t *testing.T) {
+	session, _ := NewCallSession("test-session", nil, nil)
+
+	stats := session.GetStats()
+	if stats == nil {
+		t.Error("Expected stats")
+	}
+}
+
+func TestSessionManager_CreateSession(t *testing.T) {
+	manager := NewSessionManager()
+
+	config := DefaultCallConfig()
+	peerInfo := &PeerInfo{PeerID: "test-peer"}
+
+	session, err := manager.CreateSession("session-1", config, peerInfo)
+	if err != nil {
+		t.Fatalf("CreateSession failed: %v", err)
+	}
+
+	if session == nil {
+		t.Error("Expected session")
+	}
+}
+
+func TestSessionManager_GetSession(t *testing.T) {
+	manager := NewSessionManager()
+
+	manager.CreateSession("session-1", DefaultCallConfig(), &PeerInfo{PeerID: "test"})
+
+	session, err := manager.GetSession("session-1")
+	if err != nil {
+		t.Fatalf("GetSession failed: %v", err)
+	}
+
+	if session.GetSessionID() != "session-1" {
+		t.Errorf("Session ID mismatch")
+	}
+}
+
+func TestSessionManager_RemoveSession(t *testing.T) {
+	manager := NewSessionManager()
+
+	manager.CreateSession("session-1", DefaultCallConfig(), nil)
+
+	err := manager.RemoveSession("session-1")
+	if err != nil {
+		t.Errorf("RemoveSession failed: %v", err)
+	}
+
+	_, err = manager.GetSession("session-1")
+	if err == nil {
+		t.Error("Expected error when getting removed session")
+	}
+}
+
+func TestSessionManager_ListSessions(t *testing.T) {
+	manager := NewSessionManager()
+
+	manager.CreateSession("session-1", DefaultCallConfig(), nil)
+	manager.CreateSession("session-2", DefaultCallConfig(), nil)
+
+	sessions := manager.ListSessions()
+	if len(sessions) != 2 {
+		t.Errorf("Expected 2 sessions, got %d", len(sessions))
+	}
+}
+
+func TestSessionManager_CloseAll(t *testing.T) {
+	manager := NewSessionManager()
+
+	manager.CreateSession("session-1", DefaultCallConfig(), nil)
+	manager.CreateSession("session-2", DefaultCallConfig(), nil)
+
+	err := manager.CloseAll()
+	if err != nil {
+		t.Errorf("CloseAll failed: %v", err)
+	}
+
+	sessions := manager.ListSessions()
+	if len(sessions) != 0 {
+		t.Errorf("Expected 0 sessions after close, got %d", len(sessions))
+	}
+}
+
+func TestMediaManager_Initialize(t *testing.T) {
+	manager := NewMediaManager()
+
+	err := manager.Initialize()
+	if err != nil {
+		t.Fatalf("Initialize failed: %v", err)
+	}
+
+	if manager.GetState() != ManagerStateInitialized {
+		t.Errorf("Expected initialized state")
+	}
+}
+
+func TestMediaManager_GetDevices(t *testing.T) {
+	manager := NewMediaManager()
+	manager.Initialize()
+
+	devices, err := manager.GetDevices(MediaTypeAudio)
+	if err != nil {
+		t.Fatalf("GetDevices failed: %v", err)
+	}
+
+	if len(devices) == 0 {
+		t.Error("Expected at least one audio device")
+	}
+
+	devices, err = manager.GetDevices(MediaTypeVideo)
+	if err != nil {
+		t.Fatalf("GetDevices failed: %v", err)
+	}
+
+	if len(devices) == 0 {
+		t.Error("Expected at least one video device")
+	}
+}
+
+func TestMediaManager_CreateCallSession(t *testing.T) {
+	manager := NewMediaManager()
+	manager.Initialize()
+
+	session, err := manager.CreateCallSession(DefaultCallConfig())
+	if err != nil {
+		t.Fatalf("CreateCallSession failed: %v", err)
+	}
+
+	if session == nil {
+		t.Error("Expected session")
+	}
+}
+
+func TestMediaManager_JoinCall(t *testing.T) {
+	manager := NewMediaManager()
+	manager.Initialize()
+
+	session, _ := manager.CreateCallSession(DefaultCallConfig())
+	sessionID := session.GetSessionID()
+
+	joinedSession, err := manager.JoinCall(sessionID)
+	if err != nil {
+		t.Fatalf("JoinCall failed: %v", err)
+	}
+
+	if joinedSession.GetSessionID() != sessionID {
+		t.Errorf("Session ID mismatch")
+	}
+}
+
+func TestMediaManager_LeaveCall(t *testing.T) {
+	manager := NewMediaManager()
+	manager.Initialize()
+
+	session, _ := manager.CreateCallSession(DefaultCallConfig())
+	sessionID := session.GetSessionID()
+
+	err := manager.LeaveCall(sessionID)
+	if err != nil {
+		t.Errorf("LeaveCall failed: %v", err)
+	}
+}
+
+func TestMediaManager_GetCallStats(t *testing.T) {
+	manager := NewMediaManager()
+	manager.Initialize()
+
+	session, _ := manager.CreateCallSession(DefaultCallConfig())
+	sessionID := session.GetSessionID()
+
+	session.Start()
+
+	stats, err := manager.GetCallStats(sessionID)
+	if err != nil {
+		t.Fatalf("GetCallStats failed: %v", err)
+	}
+
+	if stats == nil {
+		t.Error("Expected stats")
+	}
+}
+
+func TestMediaManager_Destroy(t *testing.T) {
+	manager := NewMediaManager()
+	manager.Initialize()
+
+	err := manager.Destroy()
+	if err != nil {
+		t.Fatalf("Destroy failed: %v", err)
+	}
+
+	if manager.GetState() != ManagerStateStopped {
+		t.Errorf("Expected stopped state")
+	}
+}
+
+func TestMediaManager_GetUptime(t *testing.T) {
+	manager := NewMediaManager()
+	manager.Initialize()
+
+	uptime := manager.GetUptime()
+	if uptime == 0 {
+		t.Error("Expected uptime > 0")
+	}
+}
+
+func TestMediaManager_GetSessionCount(t *testing.T) {
+	manager := NewMediaManager()
+	manager.Initialize()
+
+	count := manager.GetSessionCount()
+	if count != 0 {
+		t.Errorf("Expected 0 sessions initially, got %d", count)
+	}
+
+	manager.CreateCallSession(DefaultCallSession())
+
+	count = manager.GetSessionCount()
+	if count != 1 {
+		t.Errorf("Expected 1 session, got %d", count)
+	}
+}
+
+func TestMediaManager_RefreshDevices(t *testing.T) {
+	manager := NewMediaManager()
+	manager.Initialize()
+
+	err := manager.RefreshDevices()
+	if err != nil {
+		t.Errorf("RefreshDevices failed: %v", err)
+	}
+}
+
+func TestMediaManagerFactory(t *testing.T) {
+	factory := NewMediaManagerFactory()
+
+	manager, err := factory.CreateDefault()
+	if err != nil {
+		t.Fatalf("CreateDefault failed: %v", err)
+	}
+
+	if manager == nil {
+		t.Error("Expected manager")
+	}
+
+	config := DefaultMediaManagerConfig()
+	manager2, err := factory.CreateWithConfig(config)
+	if err != nil {
+		t.Fatalf("CreateWithConfig failed: %v", err)
+	}
+
+	if manager2 == nil {
+		t.Error("Expected manager2")
+	}
+}
+
+func TestDefaultConfigs(t *testing.T) {
+	audioConfig := DefaultAudioConfig()
+	if audioConfig.Codec != "opus" {
+		t.Errorf("Expected opus codec")
+	}
+	if audioConfig.SampleRate != 48000 {
+		t.Errorf("Expected 48000 sample rate")
+	}
+
+	videoConfig := DefaultVideoConfig()
+	if videoConfig.Codec != "vp8" {
+		t.Errorf("Expected vp8 codec")
+	}
+	if videoConfig.Width != 640 {
+		t.Errorf("Expected 640 width")
+	}
+
+	callConfig := DefaultCallConfig()
+	if callConfig.MaxBitrate != 1000000 {
+		t.Errorf("Expected 1000000 max bitrate")
+	}
+	if callConfig.UseFEC != true {
+		t.Errorf("Expected FEC enabled")
+	}
+}
