@@ -12,6 +12,10 @@ require (
 	github.com/netvideo/storage v0.0.0
 	github.com/netvideo/transport v0.0.0
 	github.com/netvideo/ui v0.0.0
+	github.com/gorilla/websocket v1.5.1
+	github.com/mattn/go-sqlite3 v1.14.18
+	github.com/stretchr/testify v1.8.4
+	golang.org/x/crypto v0.17.0
 )
 
 replace (

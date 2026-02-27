@@ -1,6 +1,8 @@
 package mocks
 
 import (
+	"time"
+
 	"github.com/netvideo/transport"
 	"github.com/stretchr/testify/mock"
 )

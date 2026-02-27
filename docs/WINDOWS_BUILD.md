@@ -309,6 +309,50 @@ dlv exec o2ochat-debug.exe
 - [ ] 病毒扫描通过
 - [ ] GitHub Release 已创建
 
+## 桌面 GUI 应用
+
+O2OChat 提供 Windows 桌面 GUI 应用，使用 Fyne 框架开发。
+
+### 构建桌面应用
+
+```bash
+cd windows/O2OChat
+go mod tidy
+go build -o o2ochat-gui.exe .
+```
+
+### 运行桌面应用
+
+```bash
+./o2ochat-gui.exe
+```
+
+### 依赖要求
+
+- Go 1.22+
+- GCC 编译器 (MinGW)
+- GTK3 运行时库
+
+```powershell
+# Windows 上安装 MinGW
+choco install mingw
+
+# 或使用 MSYS2
+pacman -S mingw-w64-x86_64-gcc
+```
+
+### 交叉编译 (Linux/macOS → Windows)
+
+```bash
+export GOOS=windows
+export GOARCH=amd64
+export CGO_ENABLED=1
+export CC=x86_64-w64-mingw32-gcc
+
+cd windows/O2OChat
+go build -o o2ochat-gui.exe .
+```
+
 ## 相关链接
 
 - [Go 交叉编译](https://golang.org/doc/install/source#environment)

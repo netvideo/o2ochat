@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">O2OChat</string>
+    <string name="action_settings">Тохиргоо</string>
+    <string name="add_contact">Холбоо нэмэх</string>
+    <string name="enter_peer_id">Peer ID оруулна уу</string>
+    <string name="enter_display_name">Дэлгэцэн дээрх нэрээ оруулна уу</string>
+    <string name="send">Илгээх</string>
+    <string name="cancel">Цуцлах</string>
+    <string name="ok">Тийм</string>
+    <string name="message_hint">Зурвас бичнэ үү...</string>
+    <string name="voice_call">Дууны яриа</string>
+    <string name="video_call">Видео яриа</string>
+    <string name="send_file">Файл илгээх</string>
+    <string name="no_contacts">Холбоо байхгүй</string>
+    <string name="online">Онлайн</string>
+    <string name="offline">Офлайн</string>
+    <string name="connecting">Холбогдож байна...</string>
+    <string name="call_ended">Яриа дууслаа</string>
+    <string name="incoming_call">Ирж буй дуудлага</string>
+    <string name="outgoing_call">Ярьж байна...</string>
+</resources>

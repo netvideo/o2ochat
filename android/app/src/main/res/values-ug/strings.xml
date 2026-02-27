@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">O2OChat</string>
+    <string name="action_settings">تەڭشەك</string>
+    <string name="add_contact">ئالاقىداشنى قوشۇش</string>
+    <string name="enter_peer_id">Peer ID نى كىرگۈزۈڭ</string>
+    <string name="enter_display_name">كۆرۈنگۈچ ئىسمىنى كىرگۈزۈڭ</string>
+    <string name="send">يوللاش</string>
+    <string name="cancel">بىكار قىلىش</string>
+    <string name="ok">ئىناۋەتلىك</string>
+    <string name="message_hint">خەت يېزىڭ...</string>
+    <string name="voice_call">ئاۋازلىق سۆزلىشىش</string>
+    <string name="video_call">ۋىدېيولۇق سۆزلىشىش</string>
+    <string name="send_file">ھۆجەت يوللاش</string>
+    <string name="no_contacts">ئالاقىداش يوق</string>
+    <string name="online">ئىشلەپ تۇرۇۋاتىدۇ</string>
+    <string name="offline">ئىشلەپ تۇرمايدۇ</string>
+    <string name="connecting">ئۇلانماقتا...</string>
+    <string name="call_ended">سۆزلىشىش ئاخىرلاشتى</string>
+    <string name="incoming_call">كىرىۋاتقان چاقىرىش</string>
+    <string name="outgoing_call">چاقىرىۋاتىدۇ...</string>
+</resources>

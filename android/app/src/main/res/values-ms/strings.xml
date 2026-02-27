@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">O2OChat</string>
+    <string name="action_settings">Tetapan</string>
+    <string name="add_contact">Tambah kenalan</string>
+    <string name="enter_peer_id">Masukkan ID Peer</string>
+    <string name="enter_display_name">Masukkan nama paparan</string>
+    <string name="send">Hantar</string>
+    <string name="cancel">Batal</string>
+    <string name="ok">OK</string>
+    <string name="message_hint">Taip mesej...</string>
+    <string name="voice_call">Panggilan suara</string>
+    <string name="video_call">Panggilan video</string>
+    <string name="send_file">Hantar fail</string>
+    <string name="no_contacts">Tiada kenalan</string>
+    <string name="online">Online</string>
+    <string name="offline">Offline</string>
+    <string name="connecting">Menyambung...</string>
+    <string name="call_ended">Panggilan tamat</string>
+    <string name="incoming_call">Panggilan masuk</string>
+    <string name="outgoing_call">Memanggil...</string>
+</resources>
