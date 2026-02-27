@@ -284,7 +284,16 @@ go build -ldflags "-s -w -linkmode external -extldflags '-static'" -o o2ochat.ex
 **解决**:
 ```bash
 # 使用 rsrc 工具嵌入图标
-go get github.com/akavel/rsrc
+# 方法1: 使用 go install (推荐，Go 1.17+)
+go install github.com/akavel/rsrc@latest
+
+# 方法2: 使用 git clone
+git clone https://github.com/akavel/rsrc.git
+cd rsrc
+go build -o rsrc.exe .
+cd ..
+
+# 嵌入图标
 rsrc -ico icon.ico -o rsrc.syso
 go build -o o2ochat.exe ./cmd/o2ochat
 ```

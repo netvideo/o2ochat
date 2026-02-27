@@ -159,5 +159,12 @@ go tool cover -html=coverage.out
 go vet ./...
 
 # Update dependencies
-go get -u ./...
+# 方法1: 使用 go get (Go 1.16 及以下)
+# go get -u ./...
+
+# 方法2: 使用 go install (Go 1.17+, 推荐)
+# go install ./...
+
+# 方法3: 使用 git submodule 管理依赖
+git submodule update --init --recursive
 ```
