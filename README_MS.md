@@ -75,6 +75,29 @@ Lesen MIT - Lihat fail [LICENSE](LICENSE) untuk butiran.
 
 ---
 
+
+---
+
+### ⚠️ Amaran Risiko Undang-undang
+
+**Pemberitahuan Penting: Projek ini untuk tujuan pendidikan sahaja**
+
+- 📚 **Tujuan Pendidikan** - Demonstrasi komunikasi P2P dan penyulitan
+- ⚖️ **Pematuhan Undang-undang** - Pengguna mesti mematuhi undang-undang tempatan
+- 🚫 **Tiada Penggunaan Haram** - Dilarang untuk aktiviti haram
+- 📝 **Tanggungjawab Pengguna** - Pengguna memikul tanggungjawab undang-undang
+- 🔒 **Keberkecualian Teknologi** - Teknologi adalah neutral
+
+**Dengan menggunakan projek ini, anda bersetuju:**
+1. Hanya untuk tujuan yang sah
+2. Tidak terlibat dalam aktiviti haram
+3. Menerima risiko teknikal
+4. Mematuhi [Terma](TERMS_OF_SERVICE.md) dan [Privasi](PRIVACY.md)
+
+Lihat: [Notis Keselamatan](SECURITY_NOTICE.md)
+
+---
+
 <p align="center">
   <b>P2P Tulen | Penyulitan Hujung-ke-Hujung | Komunikasi Bebas</b>
 </p>

@@ -75,6 +75,29 @@ MIT License - Siehe [LICENSE](LICENSE) Datei für Details.
 
 ---
 
+
+---
+
+### ⚠️ Rechtlicher Warnhinweis
+
+**Wichtiger Hinweis: Dieses Projekt dient nur zu Bildungszwecken**
+
+- 📚 **Bildungszweck** - Demonstration von P2P-Kommunikation und Verschlüsselung
+- ⚖️ **Einhaltung der Gesetze** - Benutzer müssen lokale Gesetze befolgen
+- 🚫 **Keine illegale Nutzung** - Verboten für illegale Aktivitäten
+- 📝 **Benutzerverantwortung** - Benutzer tragen rechtliche Verantwortung
+- 🔒 **Technologische Neutralität** - Technologie ist neutral
+
+**Mit der Nutzung stimmen Sie zu:**
+1. Nur für legale Zwecke verwenden
+2. Keine illegalen Aktivitäten durchführen
+3. Technische Risiken akzeptieren
+4. [Nutzungsbedingungen](TERMS_OF_SERVICE.md) und [Datenschutz](PRIVACY.md) einhalten
+
+Siehe: [Sicherheitshinweis](SECURITY_NOTICE.md)
+
+---
+
 <p align="center">
   <b>Reines P2P | Ende-zu-Ende-Verschlüsselung | Freie Kommunikation</b>
 </p>

@@ -75,6 +75,29 @@ Licence MIT - Voir le fichier [LICENSE](LICENSE) pour plus de détails.
 
 ---
 
+
+---
+
+### ⚠️ Avertissement de Risque Juridique
+
+**Avis Important: Ce projet est à des fins éducatives uniquement**
+
+- 📚 **But Éducatif** - Démonstration de communication P2P et chiffrement
+- ⚖️ **Conformité Légale** - Les utilisateurs doivent respecter les lois locales
+- 🚫 **Aucune Utilisation Illégale** - Interdit pour activités illégales
+- 📝 **Responsabilité Utilisateur** - Les utilisateurs assument la responsabilité
+- 🔒 **Neutralité Technologique** - La technologie est neutre
+
+**En utilisant ce projet, vous acceptez:**
+1. Utiliser uniquement à des fins légales
+2. Ne pas s'engager dans des activités illégales
+3. Accepter les risques techniques
+4. Respecter [Conditions](TERMS_OF_SERVICE.md) et [Confidentialité](PRIVACY.md)
+
+Voir: [Avis de Sécurité](SECURITY_NOTICE.md)
+
+---
+
 <p align="center">
   <b>Pur P2P | Chiffrement de Bout en Bout | Communication Libre</b>
 </p>
