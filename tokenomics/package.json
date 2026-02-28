@@ -1,0 +1,47 @@
+{
+  "name": "o2ochat-tokenomics",
+  "version": "1.0.0",
+  "description": "O2OChat Token Smart Contracts",
+  "main": "index.js",
+  "scripts": {
+    "compile": "npx hardhat compile",
+    "test": "npx hardhat test",
+    "test:coverage": "npx hardhat coverage",
+    "test:gas": "REPORT_GAS=true npx hardhat test",
+    "deploy:goerli": "npx hardhat run scripts/deploy.js --network goerli",
+    "deploy:mumbai": "npx hardhat run scripts/deploy.js --network mumbai",
+    "deploy:mainnet": "npx hardhat run scripts/deploy.js --network mainnet",
+    "deploy:polygon": "npx hardhat run scripts/deploy.js --network polygon",
+    "verify:goerli": "npx hardhat verify --network goerli",
+    "verify:mainnet": "npx hardhat verify --network mainnet",
+    "lint": "eslint .",
+    "prettier": "prettier --write **/*.sol **/*.js",
+    "clean": "npx hardhat clean"
+  },
+  "keywords": [
+    "o2ochat",
+    "token",
+    "erc20",
+    "staking",
+    "defi",
+    "p2p",
+    "messaging"
+  ],
+  "author": "O2OChat Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.0",
+    "@openzeppelin/hardhat-upgrades": "^3.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "prettier-plugin-solidity": "^1.0.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.0",
+    "@openzeppelin/contracts-upgradeable": "^5.0.0",
+    "dotenv": "^16.0.0",
+    "ethers": "^6.0.0"
+  }
+}
