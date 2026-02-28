@@ -167,8 +167,9 @@ func TestVerifySignatureNoSignature(t *testing.T) {
 	if valid {
 		t.Error("Expected verification to fail with no signature")
 	}
-	}
+}
 
+func TestValidateNonceFormat(t *testing.T) {
 	invalidNonce := "invalid"
 	if ValidateNonceFormat(invalidNonce) {
 		t.Error("Expected invalid nonce format to be rejected")
