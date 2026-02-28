@@ -75,6 +75,26 @@ MIT License - See [LICENSE](LICENSE) file for details.
 
 ---
 
+### ⚠️ Legal Risk Warning
+
+**Important Notice: This project is for educational purposes only**
+
+- 📚 **Educational Purpose** - This project demonstrates P2P communication, end-to-end encryption technologies
+- ⚖️ **Compliance with Laws** - Users must comply with local laws and regulations
+- 🚫 **No Illegal Use** - Prohibited for illegal activities or content
+- 📝 **User Responsibility** - Users bear full legal responsibility
+- 🔒 **Technology Neutrality** - Technology itself is neutral
+
+**By using this project, you agree to:**
+1. Use only for legal purposes
+2. Not engage in illegal activities
+3. Accept technical risks
+4. Comply with [Terms](TERMS_OF_SERVICE.md) and [Privacy](PRIVACY.md)
+
+See: [Security Notice](SECURITY_NOTICE.md)
+
+---
+
 <p align="center">
   <b>Pure P2P | End-to-End Encryption | Free Communication</b>
 </p>

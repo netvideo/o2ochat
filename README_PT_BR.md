@@ -106,6 +106,29 @@ Licença MIT - Veja o arquivo [LICENSE](LICENSE) para detalhes.
 
 ---
 
+
+---
+
+### ⚠️ Aviso de Risco Legal
+
+**Aviso Importante: Este projeto é apenas para fins educacionais**
+
+- 📚 **Propósito Educacional** - Demonstração de comunicação P2P e criptografia
+- ⚖️ **Conformidade Legal** - Usuários devem cumprir leis locais
+- 🚫 **Nenhum Uso Ilegal** - Proibido para atividades ilegais
+- 📝 **Responsabilidade do Usuário** - Usuários assumem responsabilidade
+- 🔒 **Neutralidade Tecnológica** - A tecnologia é neutra
+
+**Ao usar este projeto, você concorda:**
+1. Usar apenas para fins legais
+2. Não se envolver em atividades ilegais
+3. Aceitar riscos técnicos
+4. Cumprir [Termos](TERMS_OF_SERVICE.md) e [Privacidade](PRIVACY.md)
+
+Veja: [Aviso de Segurança](SECURITY_NOTICE.md)
+
+---
+
 <p align="center">
   <b>P2P Puro | Criptografia de Ponta a Ponta | Comunicação Livre</b>
 </p>
