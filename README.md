@@ -1,6 +1,6 @@
 # O2OChat
 
-🌍 **[English](README_EN.md)** | **[中文](README.md)** | **[Español](README_ES.md)** | **[Français](README_FR.md)** | **[Deutsch](README_DE.md)** | **[日本語](README_JA.md)** | **[한국어](README_KO.md)** | **[Русский](README_RU.md)** | **[العربية](README_AR.md)** | **[עברית](README_HE.md)** | **[Bahasa Melayu](README_MS.md)**
+🌍 **[English](README_EN.md)** | **[中文](README.md)** | **[繁體中文](README_ZH_TW.md)** | **[Español](README_ES.md)** | **[Français](README_FR.md)** | **[Deutsch](README_DE.md)** | **[日本語](README_JA.md)** | **[한국어](README_KO.md)** | **[Русский](README_RU.md)** | **[العربية](README_AR.md)** | **[עברית](README_HE.md)** | **[Bahasa Melayu](README_MS.md)** | **[Português](README_PT_BR.md)** | **[Italiano](README_IT.md)**
 
 ## 纯 P2P 即时通讯软件
 
@@ -89,12 +89,54 @@ MIT License - 详见 [LICENSE](LICENSE) 文件。
 
 ### 联系我们
 
-- 项目主页: https://o2ochat.io
-- 问题反馈: https://github.com/yourusername/o2ochat/issues
-- 邮件: support@o2ochat.io
+- 项目主页：https://github.com/netvideo/o2ochat
+- 问题反馈：https://github.com/netvideo/o2ochat/issues
+- 邮件：netvideo1@sina.com
+
+---
+
+### 相关文档
+
+- [隐私政策](PRIVACY.md)
+- [用户协议](TERMS_OF_SERVICE.md)
+- [安全使用说明](SECURITY_NOTICE.md)
+- [测试报告](TEST_REPORT.md)
+- [修复报告](FIX_REPORT.md)
+- [完善报告](IMPROVEMENT_COMPLETION_REPORT.md)
+- [多语言报告](MULTILINGUAL_COMPLETION_REPORT.md)
+
+---
+
+### 项目统计
+
+- **版本**: v1.0.0
+- **代码**: 5,791+ 行
+- **测试**: 2,500+ 行
+- **文档**: 203,550+ 行
+- **语言**: 15 种 README
+- **界面**: 16 种语言
+- **平台**: 6 个
+- **许可**: MIT
+- **状态**: ✅ 完成
+
+---
+
+### 发布信息
+
+- **GitHub**: https://github.com/netvideo/o2ochat
+- **发布**: v1.0.0
+- **时间**: 2026 年 2 月 28 日
+- **作者**: netvideo <netvideo1@sina.com>
+- **状态**: ✅ 已发布
 
 ---
 
 <p align="center">
   <b>纯 P2P | 端到端加密 | 自由通信</b>
 </p>
+
+---
+
+**版本**: v1.0.0  
+**最后更新**: 2026 年 2 月 28 日  
+**状态**: ✅ 完成
