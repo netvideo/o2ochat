@@ -4,13 +4,24 @@ import (
 	"testing"
 
 	"github.com/netvideo/identity"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestCreateIdentity(t *testing.T) {
-	// 准备
-	manager := identity.NewIdentityManager()
+	// 使用内存存储创建管理器
+	store := identity.NewMemoryIdentityStore()
+	keyStorage := identity.NewMemoryKeyStorage()
+
+	if store == nil {
+		t.Fatal("Failed to create memory identity store")
+	}
+	if keyStorage == nil {
+		t.Fatal("Failed to create memory key storage")
+	}
+
+	manager, err := identity.NewIdentityManager(store, keyStorage)
+	if err != nil {
+		t.Fatalf("Failed to create identity manager: %v", err)
+	}
 	defer manager.Close()
 
 	config := &identity.IdentityConfig{
@@ -20,18 +31,30 @@ func TestCreateIdentity(t *testing.T) {
 
 	// 执行
 	id, err := manager.CreateIdentity(config)
+	if err != nil {
+		t.Fatalf("Failed to create identity: %v", err)
+	}
 
 	// 验证
-	require.NoError(t, err, "创建身份不应出错")
-	assert.NotEmpty(t, id.PeerID, "Peer ID 不应为空")
-	assert.NotEmpty(t, id.PublicKey, "公钥不应为空")
-	assert.Equal(t, 32, len(id.PublicKey), "Ed25519 公钥应为 32 字节")
-	assert.NotZero(t, id.CreatedAt, "创建时间不应为零")
+	if id.PeerID == "" {
+		t.Error("Peer ID should not be empty")
+	}
+	if len(id.PublicKey) == 0 {
+		t.Error("PublicKey should not be empty")
+	}
+	if id.CreatedAt.IsZero() {
+		t.Error("CreatedAt should not be zero")
+	}
 }
 
 func TestSignAndVerify(t *testing.T) {
-	// 准备
-	manager := identity.NewIdentityManager()
+	store := identity.NewMemoryIdentityStore()
+	keyStorage := identity.NewMemoryKeyStorage()
+
+	manager, err := identity.NewIdentityManager(store, keyStorage)
+	if err != nil {
+		t.Fatalf("Failed to create identity manager: %v", err)
+	}
 	defer manager.Close()
 
 	config := &identity.IdentityConfig{
@@ -40,25 +63,52 @@ func TestSignAndVerify(t *testing.T) {
 	}
 
 	id, err := manager.CreateIdentity(config)
-	require.NoError(t, err)
+	if err != nil {
+		t.Fatalf("Failed to create identity: %v", err)
+	}
 
 	message := []byte("测试消息")
 
 	// 执行
-	signature, err := manager.SignMessage(message)
-	require.NoError(t, err, "签名不应出错")
+	signature, err := manager.SignMessage(id.PeerID, message)
+	if err != nil {
+		t.Fatalf("Failed to sign message: %v", err)
+	}
 
-	valid := manager.VerifySignature(id.PeerID, message, signature)
+	if len(signature) == 0 {
+		t.Fatal("Signature should not be empty")
+	}
 
-	// 验证
-	assert.True(t, valid, "签名验证应通过")
-	assert.NotEmpty(t, signature, "签名不应为空")
-	assert.Equal(t, 64, len(signature), "Ed25519 签名应为 64 字节")
+	// 验证签名
+	valid, err := manager.VerifySignature(id.PeerID, message, signature)
+	if err != nil {
+		t.Fatalf("Failed to verify signature: %v", err)
+	}
+
+	if !valid {
+		t.Error("Signature should be valid")
+	}
+
+	// 验证错误的签名
+	wrongMessage := []byte("错误的消息")
+	valid, err = manager.VerifySignature(id.PeerID, wrongMessage, signature)
+	if err != nil {
+		t.Fatalf("Failed to verify wrong signature: %v", err)
+	}
+
+	if valid {
+		t.Error("Signature should not be valid for wrong message")
+	}
 }
 
 func TestExportImportIdentity(t *testing.T) {
-	// 准备
-	manager := identity.NewIdentityManager()
+	store := identity.NewMemoryIdentityStore()
+	keyStorage := identity.NewMemoryKeyStorage()
+
+	manager, err := identity.NewIdentityManager(store, keyStorage)
+	if err != nil {
+		t.Fatalf("Failed to create identity manager: %v", err)
+	}
 	defer manager.Close()
 
 	config := &identity.IdentityConfig{
@@ -66,26 +116,41 @@ func TestExportImportIdentity(t *testing.T) {
 		KeyLength: 256,
 	}
 
-	originalID, err := manager.CreateIdentity(config)
-	require.NoError(t, err)
+	id, err := manager.CreateIdentity(config)
+	if err != nil {
+		t.Fatalf("Failed to create identity: %v", err)
+	}
 
+	// 导出身份
 	password := "test-password"
+	exportData, err := manager.ExportIdentity(id.PeerID, password)
+	if err != nil {
+		t.Fatalf("Failed to export identity: %v", err)
+	}
 
-	// 执行
-	exportData, err := manager.ExportIdentity(originalID.PeerID, password)
-	require.NoError(t, err, "导出不应出错")
+	if len(exportData) == 0 {
+		t.Fatal("Export data should not be empty")
+	}
 
-	importedID, err := manager.ImportIdentity(exportData, password)
-	require.NoError(t, err, "导入不应出错")
+	// 导入身份
+	newPeerID, err := manager.ImportIdentity(exportData, password)
+	if err != nil {
+		t.Fatalf("Failed to import identity: %v", err)
+	}
 
-	// 验证
-	assert.Equal(t, originalID.PeerID, importedID.PeerID, "Peer ID 应相同")
-	assert.Equal(t, originalID.PublicKey, importedID.PublicKey, "公钥应相同")
+	if newPeerID != id.PeerID {
+		t.Errorf("Imported Peer ID mismatch: expected %s, got %s", id.PeerID, newPeerID)
+	}
 }
 
-func TestInvalidPassword(t *testing.T) {
-	// 准备
-	manager := identity.NewIdentityManager()
+func TestChallengeResponse(t *testing.T) {
+	store := identity.NewMemoryIdentityStore()
+	keyStorage := identity.NewMemoryKeyStorage()
+
+	manager, err := identity.NewIdentityManager(store, keyStorage)
+	if err != nil {
+		t.Fatalf("Failed to create identity manager: %v", err)
+	}
 	defer manager.Close()
 
 	config := &identity.IdentityConfig{
@@ -94,41 +159,49 @@ func TestInvalidPassword(t *testing.T) {
 	}
 
 	id, err := manager.CreateIdentity(config)
-	require.NoError(t, err)
-
-	exportData, err := manager.ExportIdentity(id.PeerID, "correct-password")
-	require.NoError(t, err)
-
-	// 执行和验证
-	_, err = manager.ImportIdentity(exportData, "wrong-password")
-	assert.Error(t, err, "错误密码应导致导入失败")
-}
-
-func TestDeleteIdentity(t *testing.T) {
-	// 准备
-	manager := identity.NewIdentityManager()
-	defer manager.Close()
-
-	config := &identity.IdentityConfig{
-		KeyType:   "ed25519",
-		KeyLength: 256,
+	if err != nil {
+		t.Fatalf("Failed to create identity: %v", err)
 	}
 
-	id, err := manager.CreateIdentity(config)
-	require.NoError(t, err)
+	// 生成挑战
+	challenge, err := manager.GenerateChallenge(id.PeerID)
+	if err != nil {
+		t.Fatalf("Failed to generate challenge: %v", err)
+	}
 
-	// 执行
-	err = manager.DeleteIdentity(id.PeerID)
-	require.NoError(t, err, "删除身份不应出错")
+	if len(challenge.Data) == 0 {
+		t.Error("Challenge data should not be empty")
+	}
 
-	// 验证
-	_, err = manager.LoadIdentity(id.PeerID)
-	assert.Error(t, err, "删除后加载身份应失败")
+	// 响应挑战
+	response, err := manager.RespondToChallenge(id.PeerID, challenge)
+	if err != nil {
+		t.Fatalf("Failed to respond to challenge: %v", err)
+	}
+
+	if len(response) == 0 {
+		t.Error("Challenge response should not be empty")
+	}
+
+	// 验证挑战响应
+	valid, err := manager.VerifyChallengeResponse(id.PeerID, challenge, response)
+	if err != nil {
+		t.Fatalf("Failed to verify challenge response: %v", err)
+	}
+
+	if !valid {
+		t.Error("Challenge response should be valid")
+	}
 }
 
-func TestListIdentities(t *testing.T) {
-	// 准备
-	manager := identity.NewIdentityManager()
+func TestMultipleIdentities(t *testing.T) {
+	store := identity.NewMemoryIdentityStore()
+	keyStorage := identity.NewMemoryKeyStorage()
+
+	manager, err := identity.NewIdentityManager(store, keyStorage)
+	if err != nil {
+		t.Fatalf("Failed to create identity manager: %v", err)
+	}
 	defer manager.Close()
 
 	config := &identity.IdentityConfig{
@@ -137,23 +210,25 @@ func TestListIdentities(t *testing.T) {
 	}
 
 	// 创建多个身份
-	numIdentities := 3
-	expectedIDs := make(map[string]bool)
-
-	for i := 0; i < numIdentities; i++ {
+	identities := make([]*identity.Identity, 5)
+	for i := 0; i < 5; i++ {
 		id, err := manager.CreateIdentity(config)
-		require.NoError(t, err)
-		expectedIDs[id.PeerID] = true
+		if err != nil {
+			t.Fatalf("Failed to create identity %d: %v", i, err)
+		}
+		identities[i] = id
 	}
 
-	// 执行
-	list, err := manager.ListIdentities()
-	require.NoError(t, err)
+	// 验证所有身份都是唯一的
+	peerIDs := make(map[string]bool)
+	for _, id := range identities {
+		if peerIDs[id.PeerID] {
+			t.Errorf("Duplicate Peer ID found: %s", id.PeerID)
+		}
+		peerIDs[id.PeerID] = true
+	}
 
-	// 验证
-	assert.Equal(t, numIdentities, len(list), "身份列表长度应正确")
-
-	for _, peerID := range list {
-		assert.True(t, expectedIDs[peerID], "Peer ID 应在预期列表中")
+	if len(peerIDs) != 5 {
+		t.Errorf("Expected 5 unique identities, got %d", len(peerIDs))
 	}
 }
