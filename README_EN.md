@@ -75,6 +75,40 @@ MIT License - See [LICENSE](LICENSE) file for details.
 
 ---
 
+### 🤖 AI Development Statement
+
+**This project is primarily developed autonomously by AI, all code is AI-generated**
+
+This is a groundbreaking AI-autonomous development project, from architecture design to code implementation, all completed through collaboration of multiple advanced AI models:
+
+- 🧠 **Project Planning**: DeepSeek3.2 Web Version
+- 💻 **Code and Documentation**: 
+  - DeepSeek3.2-Chat
+  - MiniMax M2.5
+  - Qwen3.5 Plus (current)
+  - Kimi K2.5
+- 🛠️ **Development Tool**: OpenCode
+
+**Project Features**:
+- ✅ AI autonomous decision-making and execution
+- ✅ Multi-model collaborative development
+- ✅ Humans only propose requirements, AI completes all implementation
+- ✅ Demonstrates AI's potential in software development
+
+**Tech Stack**:
+- Go (Backend Core)
+- Solidity (Smart Contracts)
+- Kotlin (Android)
+- Swift (iOS)
+- ArkTS (HarmonyOS)
+- Fyne (Cross-platform Desktop)
+
+**Development Date**: February 28, 2026  
+**Development Mode**: AI Autonomous  
+**Human Involvement**: Requirement proposal, AI full implementation
+
+---
+
 ### ⚠️ Legal Risk Warning
 
 **Important Notice: This project is for educational purposes only**
