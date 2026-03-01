@@ -1,0 +1,57 @@
+=====================================
+O2OChat v4.0.0 编译说明
+=====================================
+
+当前环境未安装 Go，请按以下步骤操作：
+
+【方法 1: 使用自动脚本 (推荐)】
+
+1. 运行自动安装编译脚本：
+   ./INSTALL_AND_COMPILE.sh
+
+2. 脚本会自动：
+   - 配置国内镜像
+   - 检查 Go 安装
+   - 下载依赖
+   - 编译所有平台版本
+   - 生成校验和
+
+【方法 2: 手动安装和编译】
+
+1. 安装 Go 1.22+：
+   wget https://golang.google.cn/dl/go1.22.4.linux-amd64.tar.gz
+   sudo tar -C /usr/local -xzf go1.22.4.linux-amd64.tar.gz
+   export PATH=$PATH:/usr/local/go/bin
+
+2. 配置国内镜像：
+   export GOPROXY=https://mirrors.aliyun.com/goproxy/,direct
+   export GOSUMDB=off
+
+3. 下载依赖：
+   go mod download
+   go mod tidy
+
+4. 编译：
+   go build -v -o o2ochat-linux ./cmd/o2ochat
+   GOOS=windows GOARCH=amd64 go build -v -o o2ochat-windows.exe ./cmd/o2ochat
+   GOOS=darwin GOARCH=amd64 go build -v -o o2ochat-macos ./cmd/o2ochat
+
+【详细文档】
+
+- SETUP_CN_GUIDE.md - 国内镜像环境搭建指南
+- COMPILE_GUIDE.md - 完整编译指南
+- INSTALL_AND_COMPILE.sh - 自动安装编译脚本
+
+【编译后文件】
+
+o2ochat-linux          (Linux 版本)
+o2ochat-windows.exe    (Windows 版本)
+o2ochat-macos          (macOS 版本)
+
+【验证编译】
+
+./o2ochat-linux --version
+
+=====================================
+项目状态：✅ 100% 完成，准备编译
+=====================================
