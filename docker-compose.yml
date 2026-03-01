@@ -1,0 +1,206 @@
+version: '3.8'
+
+services:
+  # Main O2OChat application
+  o2ochat:
+    build: .
+    image: o2ochat:latest
+    container_name: o2ochat
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    environment:
+      - O2OCHAT_ENV=production
+      - O2OCHAT_PORT=8080
+      - O2OCHAT_DB_PATH=/data/o2ochat.db
+      - O2OCHAT_LOG_LEVEL=info
+    volumes:
+      - o2ochat_data:/data
+      - o2ochat_logs:/var/log/o2ochat
+    networks:
+      - o2ochat_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Web client
+  o2ochat-web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    image: o2ochat-web:latest
+    container_name: o2ochat-web
+    ports:
+      - "3000:80"
+    depends_on:
+      - o2ochat
+    networks:
+      - o2ochat_network
+    restart: unless-stopped
+
+  # PostgreSQL database (optional, for production)
+  postgres:
+    image: postgres:15-alpine
+    container_name: o2ochat-db
+    environment:
+      POSTGRES_DB: o2ochat
+      POSTGRES_USER: o2ochat
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - o2ochat_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U o2ochat"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis cache (optional, for production)
+  redis:
+    image: redis:7-alpine
+    container_name: o2ochat-redis
+    command: redis-server --requirepass ${REDIS_PASSWORD:-changeme}
+    volumes:
+      - redis_data:/data
+    networks:
+      - o2ochat_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # NGINX reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: o2ochat-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - o2ochat
+      - o2ochat-web
+    networks:
+      - o2ochat_network
+    restart: unless-stopped
+
+  # Monitoring (Prometheus)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: o2ochat-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - o2ochat_network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+  # Monitoring (Grafana)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: o2ochat-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
+    networks:
+      - o2ochat_network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+  # Log aggregation (ELK Stack - optional)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    container_name: o2ochat-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - o2ochat_network
+    restart: unless-stopped
+    profiles:
+      - logging
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.8.0
+    container_name: o2ochat-logstash
+    volumes:
+      - ./monitoring/logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - o2ochat_logs:/var/log/o2ochat:ro
+    depends_on:
+      - elasticsearch
+    networks:
+      - o2ochat_network
+    restart: unless-stopped
+    profiles:
+      - logging
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.8.0
+    container_name: o2ochat-kibana
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - o2ochat_network
+    restart: unless-stopped
+    profiles:
+      - logging
+
+volumes:
+  o2ochat_data:
+    driver: local
+  o2ochat_logs:
+    driver: local
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  nginx_logs:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+
+networks:
+  o2ochat_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

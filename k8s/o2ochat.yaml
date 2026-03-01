@@ -1,0 +1,349 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: o2ochat
+  labels:
+    name: o2ochat
+    app.kubernetes.io/name: o2ochat
+    app.kubernetes.io/version: "4.0.0"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: o2ochat-config
+  namespace: o2ochat
+data:
+  O2OCHAT_ENV: "production"
+  O2OCHAT_PORT: "8080"
+  O2OCHAT_DB_PATH: "/data/o2ochat.db"
+  O2OCHAT_LOG_LEVEL: "info"
+  O2OCHAT_MAX_CONNECTIONS: "5000"
+  O2OCHAT_ENABLE_METRICS: "true"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: o2ochat-secrets
+  namespace: o2ochat
+type: Opaque
+stringData:
+  DB_PASSWORD: "changeme-in-production"
+  REDIS_PASSWORD: "changeme-in-production"
+  JWT_SECRET: "changeme-in-production-use-long-random-string"
+  ENCRYPTION_KEY: "changeme-in-production-use-32-byte-key"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: o2ochat
+  namespace: o2ochat
+  labels:
+    app: o2ochat
+    version: "4.0.0"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: o2ochat
+  template:
+    metadata:
+      labels:
+        app: o2ochat
+        version: "4.0.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: o2ochat
+        image: ghcr.io/netvideo/o2ochat:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 8443
+          name: https
+          protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: o2ochat-config
+        - secretRef:
+            name: o2ochat-secrets
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: logs
+          mountPath: /var/log/o2ochat
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+          limits:
+            cpu: "2000m"
+            memory: "2Gi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: o2ochat-data-pvc
+      - name: logs
+        emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: o2ochat
+              topologyKey: kubernetes.io/hostname
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: o2ochat-data-pvc
+  namespace: o2ochat
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: o2ochat-service
+  namespace: o2ochat
+  labels:
+    app: o2ochat
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  - port: 8443
+    targetPort: 8443
+    protocol: TCP
+    name: https
+  selector:
+    app: o2ochat
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: o2ochat-ingress
+  namespace: o2ochat
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+spec:
+  tls:
+  - hosts:
+    - o2ochat.example.com
+    secretName: o2ochat-tls
+  rules:
+  - host: o2ochat.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: o2ochat-service
+            port:
+              number: 8080
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: o2ochat-hpa
+  namespace: o2ochat
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: o2ochat
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 60
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: o2ochat-pdb
+  namespace: o2ochat
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: o2ochat
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: o2ochat-monitor
+  namespace: o2ochat
+  labels:
+    app: o2ochat
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: o2ochat
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: o2ochat-web-config
+  namespace: o2ochat
+data:
+  nginx.conf: |
+    server {
+        listen 80;
+        server_name _;
+        
+        root /usr/share/nginx/html;
+        index index.html;
+        
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+        
+        location /api {
+            proxy_pass http://o2ochat-service:8080;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: o2ochat-web
+  namespace: o2ochat
+  labels:
+    app: o2ochat-web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: o2ochat-web
+  template:
+    metadata:
+      labels:
+        app: o2ochat-web
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: nginx.conf
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: o2ochat-web-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: o2ochat-web-service
+  namespace: o2ochat
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+  selector:
+    app: o2ochat-web
