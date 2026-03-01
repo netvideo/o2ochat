@@ -1,0 +1,23 @@
+# SHA256 Checksums for O2OChat v4.0.0
+# Generated: Sun Mar  1 14:20:04 CST 2026
+#
+# Usage: sha256sum -c SHA256SUMS.txt
+#
+# Linux:
+# o2ochat-linux-amd64: <checksum>
+# o2ochat-linux-arm64: <checksum>
+#
+# Windows:
+# o2ochat-windows-amd64.exe: <checksum>
+# o2ochat-windows-386.exe: <checksum>
+#
+# macOS:
+# o2ochat-macos-amd64: <checksum>
+# o2ochat-macos-arm64: <checksum>
+#
+# Source:
+# o2ochat-4.0.0-source.tar.gz: <checksum>
+#
+# Docker:
+# docker pull ghcr.io/netvideo/o2ochat:4.0.0
+# Image digest: <digest>
