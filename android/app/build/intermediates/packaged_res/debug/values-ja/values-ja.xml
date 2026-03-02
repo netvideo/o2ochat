@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_settings">設定</string>
+    <string name="add_contact">連絡先を追加</string>
+    <string name="app_name">O2OChat</string>
+    <string name="call_ended">通話終了</string>
+    <string name="cancel">キャンセル</string>
+    <string name="connecting">接続中...</string>
+    <string name="enter_display_name">表示名を入力</string>
+    <string name="enter_peer_id">Peer IDを入力</string>
+    <string name="incoming_call">着信</string>
+    <string name="message_hint">メッセージを入力...</string>
+    <string name="no_contacts">連絡先がありません</string>
+    <string name="offline">オフライン</string>
+    <string name="ok">OK</string>
+    <string name="online">オンライン</string>
+    <string name="outgoing_call">発信中...</string>
+    <string name="send">送信</string>
+    <string name="send_file">ファイルを送信</string>
+    <string name="video_call">ビデオ通話</string>
+    <string name="voice_call">音声通話</string>
+</resources>

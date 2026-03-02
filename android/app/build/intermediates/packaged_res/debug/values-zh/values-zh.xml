@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_settings">设置</string>
+    <string name="add_contact">添加联系人</string>
+    <string name="app_name">O2OChat</string>
+    <string name="call_ended">通话结束</string>
+    <string name="cancel">取消</string>
+    <string name="connecting">连接中...</string>
+    <string name="enter_display_name">输入显示名称</string>
+    <string name="enter_peer_id">输入 Peer ID</string>
+    <string name="incoming_call">来电</string>
+    <string name="message_hint">输入消息...</string>
+    <string name="no_contacts">暂无联系人</string>
+    <string name="offline">离线</string>
+    <string name="ok">确定</string>
+    <string name="online">在线</string>
+    <string name="outgoing_call">呼叫中...</string>
+    <string name="send">发送</string>
+    <string name="send_file">发送文件</string>
+    <string name="video_call">视频通话</string>
+    <string name="voice_call">语音通话</string>
+</resources>

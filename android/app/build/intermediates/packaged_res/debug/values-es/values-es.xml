@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_settings">Ajustes</string>
+    <string name="add_contact">Agregar contacto</string>
+    <string name="app_name">O2OChat</string>
+    <string name="call_ended">Llamada finalizada</string>
+    <string name="cancel">Cancelar</string>
+    <string name="connecting">Conectando...</string>
+    <string name="enter_display_name">Ingrese nombre para mostrar</string>
+    <string name="enter_peer_id">Ingrese ID de Peer</string>
+    <string name="incoming_call">Llamada entrante</string>
+    <string name="message_hint">Escribe un mensaje...</string>
+    <string name="no_contacts">Sin contactos</string>
+    <string name="offline">Desconectado</string>
+    <string name="ok">Aceptar</string>
+    <string name="online">En línea</string>
+    <string name="outgoing_call">Llamando...</string>
+    <string name="send">Enviar</string>
+    <string name="send_file">Enviar archivo</string>
+    <string name="video_call">Videollamada</string>
+    <string name="voice_call">Llamada de voz</string>
+</resources>
