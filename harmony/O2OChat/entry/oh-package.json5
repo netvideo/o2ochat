@@ -1,0 +1,10 @@
+{
+  "name": "entry",
+  "version": "4.0.0",
+  "description": "O2OChat Entry Module",
+  "main": "",
+  "author": "O2OChat Team",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
+}

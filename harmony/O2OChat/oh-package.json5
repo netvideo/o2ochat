@@ -1,0 +1,13 @@
+{
+  "name": "o2ochat",
+  "version": "4.0.0",
+  "description": "O2OChat P2P Instant Messaging",
+  "main": "",
+  "author": "O2OChat Team",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "@ohos/hvigor-ohos-plugin": "4.0.2",
+    "@ohos/hvigor": "4.0.2"
+  }
+}
