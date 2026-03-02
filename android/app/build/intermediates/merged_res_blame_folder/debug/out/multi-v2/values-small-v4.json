@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.o2ochat.app-mergeDebugResources-56:/values-small-v4/values-small-v4.xml",
+            "outputFile": "com.o2ochat.app-mergeDebugResources-29:/values-small-v4/values-small-v4.xml",
             "map": [
                 {
                     "source": "/home/kwh/.gradle/caches/transforms-3/bec7de6f5493746bd6b85bdfc260f89d/transformed/material-1.11.0/res/values-small-v4/values-small-v4.xml",

@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.o2ochat.app-mergeDebugResources-56:/values-en-rCA/values-en-rCA.xml",
+            "outputFile": "com.o2ochat.app-mergeDebugResources-29:/values-en-rCA/values-en-rCA.xml",
             "map": [
                 {
                     "source": "/home/kwh/.gradle/caches/transforms-3/217cd4443c329c3de6d6b6409afab4f6/transformed/core-1.12.0/res/values-en-rCA/values-en-rCA.xml",
