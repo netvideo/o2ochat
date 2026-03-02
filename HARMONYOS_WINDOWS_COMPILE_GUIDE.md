@@ -35,7 +35,7 @@
 
 3. **验证下载**
    - 文件应为 `.exe` 安装程序
-   - 文件名类似：`DevEco-Studio-5.0.0.100-windows.exe`
+   - 文件名类似：`DevEco-Studio-6.0.2-windows.exe`
 
 ---
 
@@ -43,7 +43,7 @@
 
 1. **运行安装程序**
    ```
-   双击 DevEco-Studio-5.0.0.100-windows.exe
+   双击 DevEco-Studio-6.0.2-windows.exe
    ```
 
 2. **选择安装路径**
@@ -78,7 +78,7 @@
    - 点击"Next"
 
 4. **安装 HarmonyOS SDK**
-   - 选择 API Version: **12 (5.0.0)**
+   - 选择 API Version: **12 (6.0.2)**
    - 勾选以下组件：
      - ✅ HarmonyOS SDK
      - ✅ SDK Platform
